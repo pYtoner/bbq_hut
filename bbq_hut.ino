@@ -32,10 +32,43 @@ void loop() {
   setAll(CRGB(255, 0, 0));
   delay(100);
 
-  rainbowPattern(true);
+  rainbowPattern(MIDDLE);
 }
 
-void rainbowPattern(bool isUpwards) {
+void rainbowPattern(IndexingType indexing) {
+  #define N_MESSAGES 85
+
+  CHSV colors[N_MESSAGES];
+
+  for (int i = 0; i <= N_MESSAGES - 1; i++) {
+    colors[i] = CHSV::Blue;
+  }
+
+  while (true) {
+    for (int i = N_MESSAGES; i > 0; i--) {
+      colors[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
+    }
+
+    // change color
+    CHSV newColor = colors[1];
+    int hue = newColor.hue;
+    hue += 20;
+    hue %= 255;
+
+    colors[0] = newColor;
+
+    for (int i = 0; i <= N_MESSAGES - 1; i++) {
+      for (int t = 0; t <= 6 - 1; t++) {
+        leds[index(t, i), indexing] = colors[i];
+        leds[index(t, 170-i), indexing] = colors[i];
+      }
+    }
+    FastLED.show();
+    delay(40);
+  }
+}
+
+void messageSender() {
   #define N_MESSAGES 85
 
   CHSV colors[N_MESSAGES];
