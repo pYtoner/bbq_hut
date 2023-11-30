@@ -36,49 +36,51 @@ void loop() {
 }
 
 void rainbowPattern(bool isUpwards) {
-  CHSV colors[85];
-  CHSV shifted[85];
+  #define N_MESSAGES 85
 
-  for (int i = 0; i <= 85 - 1; i++) {
+  CHSV colors[N_MESSAGES];
+  CHSV shifted[N_MESSAGES];
+
+  for (int i = 0; i <= N_MESSAGES - 1; i++) {
     colors[i] = CHSV::Blue;
   }
 
-  for (int i = 0; i <= 85 - 1; i++) {
+  for (int i = 0; i <= N_MESSAGES - 1; i++) {
     shifted[i] = CHSV::Blue;
   }
 
   while (true) {
-    for (int i = 0; i <= 85 - 1; i++) {
-      shifted[i] = colors[(i + 1) % 85];
+    for (int i = 0; i <= N_MESSAGES - 1; i++) {
+      shifted[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
 
       // change color
-      CHSV newColor = shifted[i];
+      CHSV newColor = shifted[1];
       int hue = newColor.hue;
       hue += 20;
       hue %= 255;
 
-      shifted[5] = newColor;
+      shifted[0] = newColor;
     }
   
-    for (int i = 0; i <= 85 - 1; i++) {
+    for (int i = 0; i <= N_MESSAGES - 1; i++) {
       colors[i] = shifted[i];
     }
 
-    for (int i = 0; i <= 85 - 1; i++) {
+    for (int i = 0; i <= N_MESSAGES - 1; i++) {
       if isUpwards {
-        leds[index(0, i, MIDDLE_TOP)] = colors[i];
-        leds[index(0, 170-i), MIDDLE_TOP] = colors[i];
-        leds[index(1, i), MIDDLE_TOP] = colors[i];
-        leds[index(1, 170-i), MIDDLE_TOP] = colors[i];
-        leds[index(2, i), MIDDLE_TOP] = colors[i];
-        leds[index(2, 170-i), MIDDLE_TOP] = colors[i];
-      } else {
         leds[index(0, i), MIDDLE] = colors[i];
         leds[index(0, 170-i), MIDDLE] = colors[i];
         leds[index(1, i), MIDDLE] = colors[i];
         leds[index(1, 170-i), MIDDLE] = colors[i];
         leds[index(2, i), MIDDLE] = colors[i];
         leds[index(2, 170-i), MIDDLE] = colors[i];
+      } else {
+        leds[index(0, i, MIDDLE_TOP)] = colors[i];
+        leds[index(0, 170-i), MIDDLE_TOP] = colors[i];
+        leds[index(1, i), MIDDLE_TOP] = colors[i];
+        leds[index(1, 170-i), MIDDLE_TOP] = colors[i];
+        leds[index(2, i), MIDDLE_TOP] = colors[i];
+        leds[index(2, 170-i), MIDDLE_TOP] = colors[i];
       }
     }
     FastLED.show();
