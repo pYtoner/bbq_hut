@@ -1,7 +1,7 @@
 #include <FastLED.h>
 
 #define LED_PIN 6
-#define NUM_LEDS 170 * 6 // actual number + 1 -> extra is used for out of bounds indexed setting
+#define NUM_LEDS 170 * 6 + 1// actual number + 1 -> extra is used for out of bounds indexed setting
 #define MAX_BRIGHTNESS 255
 
 enum IndexingType {
@@ -32,14 +32,14 @@ void loop() {
   setAll(CRGB(255, 0, 0));
   delay(100);
 
-  // rainbowPattern(MIDDLE);
+  rainbowPattern(MIDDLE);
 
   // messageSenderHSV(hueChange, 5, MIDDLE);
   // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
   // messageSenderHSV(hueLerp, 5, MIDDLE);
   // messageSenderHSV(twoColorLerp, 5, MIDDLE);
 
-  messageSenderRGB(twoColorLerpLCH, 5, MIDDLE);
+  // messageSenderRGB(twoColorLerpLCH, 5, MIDDLE);
 }
 
 void rainbowPattern(IndexingType indexing) {
