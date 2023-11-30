@@ -15,12 +15,12 @@ enum IndexingType {
 CRGB leds[NUM_LEDS];
 
 int nLeds[6] = {
-  170,
-  170,
-  170,
-  170,
-  170,
-  170,
+  168,
+  168,
+  168,
+  168,
+  167,
+  168,
 };
 
 void setup() {
@@ -30,8 +30,18 @@ void setup() {
 }
 
 void loop() {
-  setAll(CRGB(255, 0, 0));
-  delay(100);
+  setTapestry(0, CRGB(0, 0, 255));
+  delay(50);
+  setTapestry(1, CRGB(0, 0, 255));
+  delay(50);
+  setTapestry(2, CRGB(0, 0, 255));
+  delay(50);
+  setTapestry(3, CRGB(0, 0, 255));
+  delay(50);
+  setTapestry(4, CRGB(0, 0, 255));
+  delay(50);
+  setTapestry(5, CRGB(0, 0, 255));
+  delay(50);
 
   // rainbowPattern(MIDDLE);
 
