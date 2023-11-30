@@ -58,17 +58,17 @@ void rainbowUpPattern() {
       shifted[83].setHue(hue);
     }
   
-    for (int i = 0; i <= 170 - 1; i++) {
+    for (int i = 0; i <= 85 - 1; i++) {
       colors[i] = shifted[i];
     }
 
     for (int i = 0; i <= 85 - 1; i++) {
-      leds[middleIndex(i)] = colors[i];
-      leds[middleIndex(170-i)] = colors[i];
-      leds[170+middleIndex(i)] = colors[i];
-      leds[170+middleIndex(170-i)] = colors[i];
-    
-      leds[170+170+i] = colors[i];
+      leds[middleIndex(0, i)] = colors[i];
+      leds[middleIndex(0, 170-i)] = colors[i];
+      leds[middleIndex(1, i)] = colors[i];
+      leds[middleIndex(1, 170-i)] = colors[i];
+      leds[middleIndex(2, i)] = colors[i];
+      leds[middleIndex(2, 170-i)] = colors[i];
     }
     FastLED.show();
     delay(40);
@@ -99,21 +99,21 @@ void rainbowDownPattern() {
       shifted[5].setHue(hue);
     }
   
-    for (int i = 0; i <= 170 - 1; i++) {
+    for (int i = 0; i <= 85 - 1; i++) {
       colors[i] = shifted[i];
     }
 
     for (int i = 0; i <= 85 - 1; i++) {
-      leds[middleIndex(i)] = colors[i];
-      leds[middleIndex(170-i)] = colors[i];
+      leds[middleIndex(0, i)] = colors[i];
+      leds[middleIndex(0, 170-i)] = colors[i];
+      leds[middleIndex(1, i)] = colors[i];
+      leds[middleIndex(1, 170-i)] = colors[i];
+      leds[middleIndex(2, i)] = colors[i];
+      leds[middleIndex(2, 170-i)] = colors[i];
     }
     FastLED.show();
     delay(40);
   }
-}
-
-int middleIndex(int idx) {
-  return (idx + 170 - 27) % 170;
 }
 
 void setAllBlack(int tapestryIdx) {
@@ -127,14 +127,53 @@ void setAll(int tapestryIdx, CRGB color) {
   FastLED.show();
 }
 
+int offsetForBottomMiddle[6] = {
+  143,
+  143,
+  143,
+  143,
+  143,
+  143,
+};
+
+// indexing starting from bottom middle
+int middleIndex(int tapestryIdx, int idx) {
+  int padding = 0;
+
+  for (int i = 0; i <= tapestryIdx - 1; i++) {
+    padding += nLeds[i];
+  }
+
+  return padding + (idx + offsetForBottomMiddle[tapestryIdx]) % nLeds[tapestryIdx];
+}
+
+int offsetForTopMiddle[6] = {
+  70,
+  70,
+  70,
+  70,
+  70,
+  70,
+};
+
+// indexing starting from top middle
+int topMiddleIndex(int tapestryIdx, int idx) {
+  int padding = 0;
+
+  for (int i = 0; i <= tapestryIdx - 1; i++) {
+    padding += nLeds[i];
+  }
+
+  return padding + (idx + offsetForTopMiddle[tapestryIdx]) % nLeds[tapestryIdx];
+}
+
 // wraps around the tapestry if idx is more than the n leds in that tapestry
 int index(int tapestryIdx, int idx) {
   int padding = 0;
 
-  int i;
-  for (i = 0; i <= tapestryIdx - 1; i++) {
+  for (int i = 0; i <= tapestryIdx - 1; i++) {
     padding += nLeds[i];
   }
 
-  return padding + idx % nLeds[i + 1];
+  return padding + idx % nLeds[tapestryIdx];
 }
