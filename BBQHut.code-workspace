@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"target": true,
+			"src/main": true,
+			"**/Cargo.lock": true
+		},
+		"code-runner.executorMap": {
+			"rust": "cargo run",
+		},
+		"[rust]": {
+			"editor.formatOnSave": true
+		},
+		"editor.fontFamily": "SF Mono",
+		"workbench.colorCustomizations" : {
+			"terminal.foreground": "#55ff55",
+			"terminal.background": "#000000"
+		},
+		"rust-analyzer.diagnostics.disabled": [
+			"macro-error", "unresolved-proc-macro", "unresolved-macro-call"
+		]
+	}
+}
