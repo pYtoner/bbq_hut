@@ -1,3 +1,4 @@
+
 #include <FastLED.h>
 
 #define LED_PIN 6
@@ -9,7 +10,7 @@ enum IndexingType {
   REVERSE,
   MIDDLE,
   MIDDLE_TOP,
-}
+};
 
 CRGB leds[NUM_LEDS];
 
@@ -32,12 +33,11 @@ void loop() {
   setAll(CRGB(255, 0, 0));
   delay(100);
 
-  rainbowPattern(MIDDLE);
+  // rainbowPattern(MIDDLE);
 
   // messageSenderHSV(hueChange, 5, MIDDLE);
   // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
   // messageSenderHSV(hueLerp, 5, MIDDLE);
-  // messageSenderHSV(twoColorLerp, 5, MIDDLE);
 
   // messageSenderRGB(twoColorLerpLCH, 5, MIDDLE);
 }
@@ -48,7 +48,7 @@ void rainbowPattern(IndexingType indexing) {
   CHSV colors[N_MESSAGES];
 
   for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    colors[i] = CHSV::Blue;
+    colors[i] = CHSV(240, 255, 127);
   }
 
   while (true) {
@@ -66,8 +66,8 @@ void rainbowPattern(IndexingType indexing) {
 
     for (int i = 0; i <= N_MESSAGES - 1; i++) {
       for (int t = 0; t <= 6 - 1; t++) {
-        leds[index(t, i), indexing] = colors[i];
-        leds[index(t, 170-i), indexing] = colors[i];
+        leds[index(t, i, MIDDLE), indexing] = colors[i];
+        leds[index(t, 170-i, MIDDLE), indexing] = colors[i];
       }
     }
     FastLED.show();
@@ -75,26 +75,14 @@ void rainbowPattern(IndexingType indexing) {
   }
 }
 
-CHSV twoColorLerp(CHSV oldColor, int changeIdx) {
-  CHSV from = 100;
-  CHSV to = 150;
-
-  int speed = 5;
-
-  int fract = 255 - abs(changeIdx % 511 - 255);
-  int hue = lerp8by8(from.hue, to.hue, fract);
-
-  return CHSV(hue, 255, 255);
-}
-
 CHSV hueLerp(CHSV oldColor, int changeIdx) {
-  CHSV from = 100;
-  CHSV to = 150;
+  int fromHue = 100;
+  int toHue = 150;
 
   int speed = 5;
 
   int fract = 255 - abs(changeIdx % 511 - 255);
-  int hue = lerp8by8(from.hue, to.hue, fract);
+  int hue = lerp8by8(fromHue, toHue, fract);
 
   return CHSV(hue, 255, 255);
 }
@@ -117,16 +105,14 @@ CHSV hueChange(CHSV oldColor, int changeIdx) {
   return newColor;
 }
 
-typedef CHSV (*ChangeFunctionHSV)(CHSV, int);
-
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderHSV(ChangeFunctionHSV changeFunction, int messageDelay, IndexingType indexing) {
+void messageSenderHSV(CHSV (*changeFunction)(CHSV, float), int messageDelay, IndexingType indexing) {
   #define N_MESSAGES 85
 
   CHSV colors[N_MESSAGES];
 
   for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    colors[i] = CHSV::Blue;
+    colors[i] = CHSV(200, 255, 127);
   }
 
   int changeIdx = 0;
@@ -139,8 +125,8 @@ void messageSenderHSV(ChangeFunctionHSV changeFunction, int messageDelay, Indexi
 
     for (int i = 0; i <= N_MESSAGES - 1; i++) {
       for (int t = 0; t <= 6 - 1; t++) {
-        leds[index(t, i), indexing] = colors[i];
-        leds[index(t, 170-i), indexing] = colors[i];
+        leds[index(t, i, indexing)] = colors[i];
+        leds[index(t, 170-i, indexing)] = colors[i];
       }
     }
     FastLED.show();
@@ -150,33 +136,31 @@ void messageSenderHSV(ChangeFunctionHSV changeFunction, int messageDelay, Indexi
   }
 }
 
-CRGB twoColorLerpLCH(CRGB oldColor, int changeIdx) {
-  double f_l = 90;
-  double f_c = 42.0;
-  double f_h = 153.0;
+// CRGB twoColorLerpLCH(CRGB oldColor, int changeIdx) {
+//   double f_l = 90;
+//   double f_c = 42.0;
+//   double f_h = 153.0;
 
-  double t_l = 90;
-  double t_c = 71.0;
-  double t_h = 110.0;
+//   double t_l = 90;
+//   double t_c = 71.0;
+//   double t_h = 110.0;
 
-  int speed = 5;
+//   int speed = 5;
 
-  int fract = 255 - abs(changeIdx % 511 - 255);
-  double l = lerpDouble(f_l, t_l, fract);
-  double c = lerpDouble(f_c, t_c, fract);
-  double h = lerpDouble(f_h, t_h, fract);
+//   int fract = 255 - abs(changeIdx % 511 - 255);
+//   double l = lerpDouble(f_l, t_l, fract);
+//   double c = lerpDouble(f_c, t_c, fract);
+//   double h = lerpDouble(f_h, t_h, fract);
 
-  return LCHtoRGB(l, c, h);
-}
+//   return LCHtoRGB(l, c, h);
+// }
 
 double lerpDouble(double from, double to, int fract) {
   return from + (( to - from ) * (double)fract) / 256;
 }
 
-typedef CRGB (*ChangeFunctionRGB)(CRGB, int);
-
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderRGB(ChangeFunctionRGB changeFunction, int messageDelay, IndexingType indexing) {
+void messageSenderRGB(CRGB (*changeFunction)(CRGB, float), int messageDelay, IndexingType indexing) {
   #define N_MESSAGES 85
 
   CRGB colors[N_MESSAGES];
@@ -195,8 +179,8 @@ void messageSenderRGB(ChangeFunctionRGB changeFunction, int messageDelay, Indexi
 
     for (int i = 0; i <= N_MESSAGES - 1; i++) {
       for (int t = 0; t <= 6 - 1; t++) {
-        leds[index(t, i), indexing] = colors[i];
-        leds[index(t, 170-i), indexing] = colors[i];
+        leds[index(t, i, indexing)] = colors[i];
+        leds[index(t, 170-i, indexing)] = colors[i];
       }
     }
     FastLED.show();
@@ -207,7 +191,7 @@ void messageSenderRGB(ChangeFunctionRGB changeFunction, int messageDelay, Indexi
 }
 
 void setTapestryBlack(int tapestryIdx) {
-  setAll(tapestryIdx, CRGB(0, 0, 0));
+  setTapestry(tapestryIdx, CRGB(0, 0, 0));
 }
 
 void setTapestry(int tapestryIdx, CRGB color) {
@@ -274,87 +258,110 @@ int index(int tapestryIdx, int idx, IndexingType indexing) {
   }
 }
 
-//////////////////
-/// LCH TO RGB ///
-//////////////////
-double[3] _LCHtoLab(double L, double C, double H) {
-  double a = cos(H * M_PI / 180.0) * C;
-  double b = sin(H * M_PI / 180.0) * C;
-  return {L, a, b};
-}
+// struct SensorData {
+//   int temperature;
+//   float humidity;
+//   long readingTime;
+// };
 
-typedef struct {
-    double X;
-    double Y;
-    double Z;
-} XYZColor;
+// // Function that returns a SensorData struct
+// SensorData getSensorData() {
+//   SensorData data;
+//   data.temperature = 25; // Example: Replace with real sensor reading
+//   data.humidity = 50.5;  // Example: Replace with real sensor reading
+//   data.readingTime = 10;
+//   return data;
+// }
 
-// Function to convert Lab to XYZ
-XYZColor _LabToXYZ(double L, double a, double b) {
-    double epsilon = 0.008856;  // Intent for use in a function or algorithm
-    double kappa = 903.3;       // Intent for use in a function or algorithm
-    double Xn = 0.95047;        // Assuming D65 illuminant
-    double Yn = 1.00000;        // Assuming D65 illuminant
-    double Zn = 1.08883;        // Assuming D65 illuminant
+// //////////////////
+// /// LCH TO RGB ///
+// //////////////////
+// struct LabColor {
+//     double L;
+//     double a;
+//     double b;
+// };
 
-    XYZColor xyz;
+// LabColor* _LCHtoLab(double L, double C, double H) {
+//   LabColor result;
+//   result.L = L;
+//   result.a = cos(H * M_PI / 180.0) * C;
+//   result.b = sin(H * M_PI / 180.0) * C;
+//   return result;
+// }
 
-    xyz.Y = L > (kappa * epsilon) ? pow((L + 16) / 116, 3) : L / kappa;
-    double fY = L > (kappa * epsilon) ? pow(xyz.Y, 1.0/3.0) : (kappa * xyz.Y + 16) / 116;
-    double fX = a / 500 + fY;
-    double fZ = fY - b / 200;
+// struct XYZColor {
+//     double X;
+//     double Y;
+//     double Z;
+// };
 
-    xyz.X = pow(fX, 3) > epsilon ? pow(fX, 3) : (116 * fX - 16) / kappa;
-    xyz.Z = pow(fZ, 3) > epsilon ? pow(fZ, 3) : (116 * fZ - 16) / kappa;
+// // Function to convert Lab to XYZ
+// XYZColor _LabToXYZ(LabColor LAB) {
+//     double epsilon = 0.008856;  // Intent for use in a function or algorithm
+//     double kappa = 903.3;       // Intent for use in a function or algorithm
+//     double Xn = 0.95047;        // Assuming D65 illuminant
+//     double Yn = 1.00000;        // Assuming D65 illuminant
+//     double Zn = 1.08883;        // Assuming D65 illuminant
 
-    xyz.X *= Xn;
-    xyz.Y *= Yn;
-    xyz.Z *= Zn;
+//     XYZColor xyz;
 
-    return xyz;
-}
+//     xyz.Y = LAB.L > (kappa * epsilon) ? pow((LAB.L + 16) / 116, 3) : LAB.L / kappa;
+//     double fY = L > (kappa * epsilon) ? pow(xyz.Y, 1.0/3.0) : (kappa * xyz.Y + 16) / 116;
+//     double fX = LAB.a / 500 + fY;
+//     double fZ = fY - LAB.b / 200;
 
-// Function to clamp RGB values
-double _clamp(double value, double min, double max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
+//     xyz.X = pow(fX, 3) > epsilon ? pow(fX, 3) : (116 * fX - 16) / kappa;
+//     xyz.Z = pow(fZ, 3) > epsilon ? pow(fZ, 3) : (116 * fZ - 16) / kappa;
 
-// Function to apply gamma correction
-double _gammaCorrect(double value) {
-    if (value <= 0.0031308) {
-        return 12.92 * value;
-    } else {
-        return 1.055 * pow(value, 1.0 / 2.4) - 0.055;
-    }
-}
+//     xyz.X *= Xn;
+//     xyz.Y *= Yn;
+//     xyz.Z *= Zn;
 
-// Function to convert XYZ to RGB
-CRGB _XYZtoRGB(XYZColor xyz) {
-    // Assuming sRGB color space and D65 white point
-    double R =  3.2406 * xyz.X - 1.5372 * xyz.Y - 0.4986 * xyz.Z;
-    double G = -0.9689 * xyz.X + 1.8758 * xyz.Y + 0.0415 * xyz.Z;
-    double B =  0.0557 * xyz.X - 0.2040 * xyz.Y + 1.0570 * xyz.Z;
+//     return xyz;
+// }
 
-    // Clamp values to the 0-1 range
-    R = _clamp(R, 0.0, 1.0);
-    G = _clamp(G, 0.0, 1.0);
-    B = _clamp(B, 0.0, 1.0);
+// // Function to clamp RGB values
+// double _clamp(double value, double min, double max) {
+//     if (value < min) return min;
+//     if (value > max) return max;
+//     return value;
+// }
 
-    // Apply gamma correction
-    R = _gammaCorrect(R);
-    G = _gammaCorrect(G);
-    B = _gammaCorrect(B);
+// // Function to apply gamma correction
+// double _gammaCorrect(double value) {
+//     if (value <= 0.0031308) {
+//         return 12.92 * value;
+//     } else {
+//         return 1.055 * pow(value, 1.0 / 2.4) - 0.055;
+//     }
+// }
 
-    return CRGB((int)(R * 255)), (int)(G * 255)), (int)(B * 255));
-}
+// // Function to convert XYZ to RGB
+// CRGB _XYZtoRGB(XYZColor xyz) {
+//     // Assuming sRGB color space and D65 white point
+//     double R =  3.2406 * xyz.X - 1.5372 * xyz.Y - 0.4986 * xyz.Z;
+//     double G = -0.9689 * xyz.X + 1.8758 * xyz.Y + 0.0415 * xyz.Z;
+//     double B =  0.0557 * xyz.X - 0.2040 * xyz.Y + 1.0570 * xyz.Z;
 
-// L darkness: black 0-100 white
-// C intensity: ?
-// H hue: 0-360
-CRGB LCHtoRGB(double L, double C, double H) {
-  double[3] LAB = _LCHtoLab(L, C, H);
-  XYZColor xyz = _LabToXYZ(LAB[0], LAB[1], LAB[2]);
-  return _XYZtoRGB(xyz);
-}
+//     // Clamp values to the 0-1 range
+//     R = _clamp(R, 0.0, 1.0);
+//     G = _clamp(G, 0.0, 1.0);
+//     B = _clamp(B, 0.0, 1.0);
+
+//     // Apply gamma correction
+//     R = _gammaCorrect(R);
+//     G = _gammaCorrect(G);
+//     B = _gammaCorrect(B);
+
+//     return CRGB((int)(R * 255)), (int)(G * 255)), (int)(B * 255));
+// }
+
+// // L darkness: black 0-100 white
+// // C intensity: ?
+// // H hue: 0-360
+// CRGB LCHtoRGB(double L, double C, double H) {
+//   LabColor LAB = _LCHtoLab(L, C, H);
+//   XYZColor xyz = _LabToXYZ(LAB);
+//   return _XYZtoRGB(xyz);
+// }
