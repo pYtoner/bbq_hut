@@ -36,15 +36,15 @@ void loop() {
 }
 
 void rainbowPattern(bool isUpwards) {
-  CRGB colors[85];
-  CRGB shifted[85];
+  CHSV colors[85];
+  CHSV shifted[85];
 
   for (int i = 0; i <= 85 - 1; i++) {
-    colors[i] = CRGB(255, 0, 0);
+    colors[i] = CHSV::Blue;
   }
 
   for (int i = 0; i <= 85 - 1; i++) {
-    shifted[i] = CRGB(255, 0, 0);
+    shifted[i] = CHSV::Blue;
   }
 
   while (true) {
@@ -52,11 +52,12 @@ void rainbowPattern(bool isUpwards) {
       shifted[i] = colors[(i + 1) % 85];
 
       // change color
-      CHSV newColor = rgb2hsv_approximate(shifted[i]);
+      CHSV newColor = shifted[i];
       int hue = newColor.hue;
       hue += 20;
       hue %= 255;
-      shifted[5].setHue(hue);
+
+      shifted[5] = newColor;
     }
   
     for (int i = 0; i <= 85 - 1; i++) {
