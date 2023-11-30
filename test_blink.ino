@@ -127,11 +127,14 @@ void setAll(int tapestryIdx, CRGB color) {
   FastLED.show();
 }
 
+// wraps around the tapestry if idx is more than the n leds in that tapestry
 int index(int tapestryIdx, int idx) {
   int padding = 0;
-  for (int i = 0; i <= tapestryIdx - 1; i++) {
+
+  int i;
+  for (i = 0; i <= tapestryIdx - 1; i++) {
     padding += nLeds[i];
   }
 
-  return padding + idx;
+  return padding + idx % nLeds[i + 1];
 }
