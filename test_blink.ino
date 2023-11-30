@@ -1,7 +1,7 @@
 #include <FastLED.h>
 
 #define LED_PIN 6
-#define NUM_LEDS 170 * 6
+#define NUM_LEDS 170 * 6 // actual number + 1 -> extra is used for out of bounds indexed setting
 #define MAX_BRIGHTNESS 255
 
 CRGB leds[NUM_LEDS];
@@ -149,5 +149,10 @@ int index(int tapestryIdx, int idx) {
     padding += nLeds[i];
   }
 
-  return padding + idx % nLeds[tapestryIdx];
+  // return dummy led if out of bounds
+  if (idx >= nLeds[tapestryIdx]) {
+    return NUM_LEDS;
+  }
+
+  return padding + idx;
 }
