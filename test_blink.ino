@@ -1,10 +1,19 @@
 #include <FastLED.h>
 
 #define LED_PIN 6
-#define NUM_LEDS 170 + 170 + 110
+#define NUM_LEDS 170 * 6
 #define MAX_BRIGHTNESS 255
 
 CRGB leds[NUM_LEDS];
+
+int nLeds[6] = {
+  170,
+  170,
+  170,
+  170,
+  170,
+  170,
+};
 
 void setup() {
   FastLED.addLeds<WS2812B, 6, GRB>(leds, NUM_LEDS);
@@ -119,5 +128,10 @@ void setAll(int tapestryIdx, CRGB color) {
 }
 
 int index(int tapestryIdx, int idx) {
-  return tapestryIdx * 170 + idx;
+  int padding = 0;
+  for (int i = 0; i <= tapestryIdx - 1; i++) {
+    padding += nLeds[i];
+  }
+
+  return padding + idx;
 }
