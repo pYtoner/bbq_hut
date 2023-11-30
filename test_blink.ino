@@ -4,6 +4,13 @@
 #define NUM_LEDS 170 * 6 // actual number + 1 -> extra is used for out of bounds indexed setting
 #define MAX_BRIGHTNESS 255
 
+enum IndexingType {
+  NORMAL,
+  REVERSE,
+  MIDDLE,
+  MIDDLE_TOP,
+}
+
 CRGB leds[NUM_LEDS];
 
 int nLeds[6] = {
@@ -58,19 +65,19 @@ void rainbowPattern(bool isUp) {
 
     for (int i = 0; i <= 85 - 1; i++) {
       if isUp {
-        leds[middleTopIndex(0, i)] = colors[i];
-        leds[middleTopIndex(0, 170-i)] = colors[i];
-        leds[middleTopIndex(1, i)] = colors[i];
-        leds[middleTopIndex(1, 170-i)] = colors[i];
-        leds[middleTopIndex(2, i)] = colors[i];
-        leds[middleTopIndex(2, 170-i)] = colors[i];
+        leds[index(0, i, MIDDLE_TOP)] = colors[i];
+        leds[index(0, 170-i), MIDDLE_TOP] = colors[i];
+        leds[index(1, i), MIDDLE_TOP] = colors[i];
+        leds[index(1, 170-i), MIDDLE_TOP] = colors[i];
+        leds[index(2, i), MIDDLE_TOP] = colors[i];
+        leds[index(2, 170-i), MIDDLE_TOP] = colors[i];
       } else {
-        leds[middleIndex(0, i)] = colors[i];
-        leds[middleIndex(0, 170-i)] = colors[i];
-        leds[middleIndex(1, i)] = colors[i];
-        leds[middleIndex(1, 170-i)] = colors[i];
-        leds[middleIndex(2, i)] = colors[i];
-        leds[middleIndex(2, 170-i)] = colors[i];
+        leds[index(0, i), MIDDLE] = colors[i];
+        leds[index(0, 170-i), MIDDLE] = colors[i];
+        leds[index(1, i), MIDDLE] = colors[i];
+        leds[index(1, 170-i), MIDDLE] = colors[i];
+        leds[index(2, i), MIDDLE] = colors[i];
+        leds[index(2, 170-i), MIDDLE] = colors[i];
       }
     }
     FastLED.show();
@@ -84,7 +91,7 @@ void setTapestryBlack(int tapestryIdx) {
 
 void setTapestry(int tapestryIdx, CRGB color) {
   for (int i = 0; i <= 170 - 1; i++) {
-    leds[index(tapestryIdx, i)] = color;
+    leds[index(tapestryIdx, i, NORMAL)] = color;
   }
   FastLED.show();
 }
@@ -110,17 +117,6 @@ int offsetForBottomMiddle[6] = {
   143,
 };
 
-// indexing starting from bottom middle
-int middleIndex(int tapestryIdx, int idx) {
-  int padding = 0;
-
-  for (int i = 0; i <= tapestryIdx - 1; i++) {
-    padding += nLeds[i];
-  }
-
-  return padding + (idx + offsetForBottomMiddle[tapestryIdx]) % nLeds[tapestryIdx];
-}
-
 int offsetForTopMiddle[6] = {
   70,
   70,
@@ -130,19 +126,8 @@ int offsetForTopMiddle[6] = {
   70,
 };
 
-// indexing starting from top middle
-int topMiddleIndex(int tapestryIdx, int idx) {
-  int padding = 0;
-
-  for (int i = 0; i <= tapestryIdx - 1; i++) {
-    padding += nLeds[i];
-  }
-
-  return padding + (idx + offsetForTopMiddle[tapestryIdx]) % nLeds[tapestryIdx];
-}
-
-// wraps around the tapestry if idx is more than the n leds in that tapestry
-int index(int tapestryIdx, int idx) {
+// returns dummy led idx if out of bounds for the tapestry
+int index(int tapestryIdx, int idx, IndexingType indexing) {
   int padding = 0;
 
   for (int i = 0; i <= tapestryIdx - 1; i++) {
@@ -154,5 +139,16 @@ int index(int tapestryIdx, int idx) {
     return NUM_LEDS;
   }
 
-  return padding + idx;
+  switch (indexing) {
+    case NORMAL:
+      return padding + (nLeds[tapestryIdx] - idx);
+    case REVERSE:
+      return padding + idx;
+    case MIDDLE:
+      return padding + (idx + offsetForBottomMiddle[tapestryIdx]) % nLeds[tapestryIdx];
+    case MIDDLE_TOP:
+      return padding + (idx + offsetForTopMiddle[tapestryIdx]) % nLeds[tapestryIdx];
+    default:
+      return padding + idx; // same as normal indexing
+  }
 }
