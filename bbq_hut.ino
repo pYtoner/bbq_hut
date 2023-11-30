@@ -32,7 +32,9 @@ void loop() {
   setAll(CRGB(255, 0, 0));
   delay(100);
 
-  rainbowPattern(MIDDLE);
+  // rainbowPattern(MIDDLE);
+  // messageSender(hueChange, 5, MIDDLE);
+  messageSender(hueChangeIndexed, 5, MIDDLE);
 }
 
 void rainbowPattern(IndexingType indexing) {
@@ -68,7 +70,40 @@ void rainbowPattern(IndexingType indexing) {
   }
 }
 
-void messageSender() {
+CHSV hueLerp(CHSV oldColor, int changeIdx) {
+  CHSV from = 100;
+  CHSV to = 150;
+
+  int speed = 5;
+
+  int fract = 255 - abs(changeIdx % 511 - 255);
+  int hue = lerp8by8(from.hue, to.hue, fract);
+
+  return CHSV(hue, 255, 255);
+}
+
+CHSV hueChangeIndexed(CHSV oldColor, int changeIdx) {
+  int hue = changeIdx * 20;
+  hue %= 255;
+
+  return CHSV(hue, 255, 255);
+}
+
+CHSV hueChange(CHSV oldColor, int changeIdx) {
+  int hue = oldColor.hue;
+  hue += 20;
+  hue %= 255;
+
+  CHSV newColor = oldColor;
+  newColor.hue = hue;
+
+  return newColor;
+}
+
+typedef CHSV (*ChangeFunction)(CHSV, int);
+
+// message delay should be 1 or more. 1 means message is sent every step
+void messageSender(ChangeFunction changeFunction, int messageDelay, IndexingType indexing) {
   #define N_MESSAGES 85
 
   CHSV colors[N_MESSAGES];
@@ -77,38 +112,24 @@ void messageSender() {
     colors[i] = CHSV::Blue;
   }
 
+  int changeIdx = 0;
   while (true) {
     for (int i = N_MESSAGES; i > 0; i--) {
       colors[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
     }
 
-    // change color
-    CHSV newColor = colors[1];
-    int hue = newColor.hue;
-    hue += 20;
-    hue %= 255;
-
-    colors[0] = newColor;
+    colors[0] = changeFunction(colors[messageDelay], changeIdx / messageDelay);
 
     for (int i = 0; i <= N_MESSAGES - 1; i++) {
-      if isUpwards {
-        leds[index(0, i), MIDDLE] = colors[i];
-        leds[index(0, 170-i), MIDDLE] = colors[i];
-        leds[index(1, i), MIDDLE] = colors[i];
-        leds[index(1, 170-i), MIDDLE] = colors[i];
-        leds[index(2, i), MIDDLE] = colors[i];
-        leds[index(2, 170-i), MIDDLE] = colors[i];
-      } else {
-        leds[index(0, i, MIDDLE_TOP)] = colors[i];
-        leds[index(0, 170-i), MIDDLE_TOP] = colors[i];
-        leds[index(1, i), MIDDLE_TOP] = colors[i];
-        leds[index(1, 170-i), MIDDLE_TOP] = colors[i];
-        leds[index(2, i), MIDDLE_TOP] = colors[i];
-        leds[index(2, 170-i), MIDDLE_TOP] = colors[i];
+      for (int t = 0; t <= 6 - 1; t++) {
+        leds[index(t, i), indexing] = colors[i];
+        leds[index(t, 170-i), indexing] = colors[i];
       }
     }
     FastLED.show();
     delay(40);
+
+    changeIdx += 1;
   }
 }
 
