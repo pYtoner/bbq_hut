@@ -35,7 +35,7 @@ void loop() {
   rainbowPattern(true);
 }
 
-void rainbowPattern(bool isUp) {
+void rainbowPattern(bool isUpwards) {
   CRGB colors[85];
   CRGB shifted[85];
 
@@ -64,7 +64,7 @@ void rainbowPattern(bool isUp) {
     }
 
     for (int i = 0; i <= 85 - 1; i++) {
-      if isUp {
+      if isUpwards {
         leds[index(0, i, MIDDLE_TOP)] = colors[i];
         leds[index(0, 170-i), MIDDLE_TOP] = colors[i];
         leds[index(1, i), MIDDLE_TOP] = colors[i];
