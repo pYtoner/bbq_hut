@@ -39,32 +39,23 @@ void rainbowPattern(bool isUpwards) {
   #define N_MESSAGES 85
 
   CHSV colors[N_MESSAGES];
-  CHSV shifted[N_MESSAGES];
 
   for (int i = 0; i <= N_MESSAGES - 1; i++) {
     colors[i] = CHSV::Blue;
   }
 
-  for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    shifted[i] = CHSV::Blue;
-  }
-
   while (true) {
-    for (int i = 0; i <= N_MESSAGES - 1; i++) {
-      shifted[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
-
-      // change color
-      CHSV newColor = shifted[1];
-      int hue = newColor.hue;
-      hue += 20;
-      hue %= 255;
-
-      shifted[0] = newColor;
+    for (int i = N_MESSAGES; i > 0; i--) {
+      colors[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
     }
-  
-    for (int i = 0; i <= N_MESSAGES - 1; i++) {
-      colors[i] = shifted[i];
-    }
+
+    // change color
+    CHSV newColor = colors[1];
+    int hue = newColor.hue;
+    hue += 20;
+    hue %= 255;
+
+    colors[0] = newColor;
 
     for (int i = 0; i <= N_MESSAGES - 1; i++) {
       if isUpwards {
