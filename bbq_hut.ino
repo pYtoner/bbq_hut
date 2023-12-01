@@ -48,9 +48,10 @@ void loop() {
 
   // messageSenderHSV(hueChange, 5, MIDDLE);
   // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
-  messageSenderHSV(hueLerp, 1, MIDDLE);
+  // messageSenderHSV(hueLerp, 1, MIDDLE);
 
-  // messageSenderRGB(twoColorLerpLCH, 5, MIDDLE);
+  // messageSenderRGB(twoColorLerpLCH, 1, MIDDLE);
+  messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE);
 }
 
 void rainbowPattern(IndexingType indexing) {
@@ -97,7 +98,6 @@ CHSV hueLerp(CHSV oldColor, int changeIdx) {
   if (fract < 0) {
     fract *= -1;
   }
-  // int fract = 255 - abs(changeIdx % 511 - 255);
   int hue = lerp8by8(fromHue, toHue, fract);
 
   return CHSV(hue, 255, 255);
@@ -156,24 +156,43 @@ void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, Ind
   }
 }
 
-// CRGB twoColorLerpLCH(CRGB oldColor, int changeIdx) {
-//   double f_l = 90;
-//   double f_c = 42.0;
-//   double f_h = 153.0;
+CRGB twoColorLerpLCH(CRGB oldColor, int changeIdx) {
+  double f_l = 90;
+  double f_c = 42.0;
+  double f_h = 153.0;
 
-//   double t_l = 90;
-//   double t_c = 71.0;
-//   double t_h = 110.0;
+  double t_l = 90;
+  double t_c = 71.0;
+  double t_h = 110.0;
 
-//   int speed = 5;
+  int speed = 5;
 
-//   int fract = 255 - abs(changeIdx % 511 - 255);
-//   double l = lerpDouble(f_l, t_l, fract);
-//   double c = lerpDouble(f_c, t_c, fract);
-//   double h = lerpDouble(f_h, t_h, fract);
+  int fract = (changeIdx * speed) % 511 - 255;
+  if (fract < 0) {
+    fract *= -1;
+  }
+  // double l = lerpDouble(f_l, t_l, fract);
+  double c = lerpDouble(f_c, t_c, fract);
+  // double h = lerpDouble(f_h, t_h, fract);
 
-//   return LCHtoRGB(l, c, h);
-// }
+  // return LCHtoRGB(90, c, 120);
+  return LCHtoRGB(90, f_c, 120);
+  // return LCHtoRGB(90, t_c, 120);
+}
+
+CRGB hueChangeIndexedRGB(CRGB oldColor, int changeIdx) {
+  int speed = 20;
+
+  int fract = (changeIdx * speed) % 511 - 255;
+  if (fract < 0) {
+    fract *= -1;
+  }
+
+  double normalized = (double)fract / 255.0;
+  double transformed = pow(normalized, 4.0) * 255.0;
+
+  return CRGB((int)transformed, 0, 0);
+}
 
 double lerpDouble(double from, double to, int fract) {
   return from + (( to - from ) * (double)fract) / 256;
@@ -282,95 +301,79 @@ int index(int tapestryIdx, int idx, IndexingType indexing) {
   }
 }
 
-// //////////////////
-// /// LCH TO RGB ///
-// //////////////////
-// struct LabColor {
-//     double L;
-//     double a;
-//     double b;
-// };
+//////////////////
+/// LCH TO RGB ///
+//////////////////
+void _LCHtoLab(double L, double C, double H, double *l, double *a, double *b) {
+  *l = L;
+  *a = cos(H * M_PI / 180.0) * C;
+  *b = sin(H * M_PI / 180.0) * C;
+}
 
-// LabColor _LCHtoLab(double L, double C, double H) {
-//   LabColor result;
-//   result.L = L;
-//   result.a = cos(H * M_PI / 180.0) * C;
-//   result.b = sin(H * M_PI / 180.0) * C;
-//   return result;
-// }
+// Function to convert Lab to XYZ
+void _LabToXYZ(double L, double A, double B, double *X, double *Y, double *Z) {
+    double epsilon = 0.008856;  // Intent for use in a function or algorithm
+    double kappa = 903.3;       // Intent for use in a function or algorithm
+    double Xn = 0.95047;        // Assuming D65 illuminant
+    double Yn = 1.00000;        // Assuming D65 illuminant
+    double Zn = 1.08883;        // Assuming D65 illuminant
 
-// struct XYZColor {
-//     double X;
-//     double Y;
-//     double Z;
-// };
+    *Y = L > (kappa * epsilon) ? pow((L + 16) / 116, 3) : L / kappa;
+    double fY = L > (kappa * epsilon) ? pow(*Y, 1.0/3.0) : (kappa * *Y + 16) / 116;
+    double fX = A / 500 + fY;
+    double fZ = fY - B / 200;
 
-// // Function to convert Lab to XYZ
-// XYZColor _LabToXYZ(LabColor LAB) {
-//     double epsilon = 0.008856;  // Intent for use in a function or algorithm
-//     double kappa = 903.3;       // Intent for use in a function or algorithm
-//     double Xn = 0.95047;        // Assuming D65 illuminant
-//     double Yn = 1.00000;        // Assuming D65 illuminant
-//     double Zn = 1.08883;        // Assuming D65 illuminant
+    *X = pow(fX, 3) > epsilon ? pow(fX, 3) : (116 * fX - 16) / kappa;
+    *Z = pow(fZ, 3) > epsilon ? pow(fZ, 3) : (116 * fZ - 16) / kappa;
 
-//     XYZColor xyz;
+    *X *= Xn;
+    *Y *= Yn;
+    *Z *= Zn;
+}
 
-//     xyz.Y = LAB.L > (kappa * epsilon) ? pow((LAB.L + 16) / 116, 3) : LAB.L / kappa;
-//     double fY = L > (kappa * epsilon) ? pow(xyz.Y, 1.0/3.0) : (kappa * xyz.Y + 16) / 116;
-//     double fX = LAB.a / 500 + fY;
-//     double fZ = fY - LAB.b / 200;
+// Function to clamp RGB values
+double _clamp(double value, double min, double max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
 
-//     xyz.X = pow(fX, 3) > epsilon ? pow(fX, 3) : (116 * fX - 16) / kappa;
-//     xyz.Z = pow(fZ, 3) > epsilon ? pow(fZ, 3) : (116 * fZ - 16) / kappa;
+// Function to apply gamma correction
+double _gammaCorrect(double value) {
+    if (value <= 0.0031308) {
+        return 12.92 * value;
+    } else {
+        return 1.055 * pow(value, 1.0 / 2.4) - 0.055;
+    }
+}
 
-//     xyz.X *= Xn;
-//     xyz.Y *= Yn;
-//     xyz.Z *= Zn;
+// Function to convert XYZ to RGB
+CRGB _XYZtoRGB(double X, double Y, double Z) {
+    // Assuming sRGB color space and D65 white point
+    double R =  3.2406 * X - 1.5372 * Y - 0.4986 * Z;
+    double G = -0.9689 * X + 1.8758 * Y + 0.0415 * Z;
+    double B =  0.0557 * X - 0.2040 * Y + 1.0570 * Z;
 
-//     return xyz;
-// }
+    // Clamp values to the 0-1 range
+    R = _clamp(R, 0.0, 1.0);
+    G = _clamp(G, 0.0, 1.0);
+    B = _clamp(B, 0.0, 1.0);
 
-// // Function to clamp RGB values
-// double _clamp(double value, double min, double max) {
-//     if (value < min) return min;
-//     if (value > max) return max;
-//     return value;
-// }
+    // Apply gamma correction
+    R = _gammaCorrect(R);
+    G = _gammaCorrect(G);
+    B = _gammaCorrect(B);
 
-// // Function to apply gamma correction
-// double _gammaCorrect(double value) {
-//     if (value <= 0.0031308) {
-//         return 12.92 * value;
-//     } else {
-//         return 1.055 * pow(value, 1.0 / 2.4) - 0.055;
-//     }
-// }
+    return CRGB((int)(R * 255), (int)(G * 255), (int)(B * 255));
+}
 
-// // Function to convert XYZ to RGB
-// CRGB _XYZtoRGB(XYZColor xyz) {
-//     // Assuming sRGB color space and D65 white point
-//     double R =  3.2406 * xyz.X - 1.5372 * xyz.Y - 0.4986 * xyz.Z;
-//     double G = -0.9689 * xyz.X + 1.8758 * xyz.Y + 0.0415 * xyz.Z;
-//     double B =  0.0557 * xyz.X - 0.2040 * xyz.Y + 1.0570 * xyz.Z;
-
-//     // Clamp values to the 0-1 range
-//     R = _clamp(R, 0.0, 1.0);
-//     G = _clamp(G, 0.0, 1.0);
-//     B = _clamp(B, 0.0, 1.0);
-
-//     // Apply gamma correction
-//     R = _gammaCorrect(R);
-//     G = _gammaCorrect(G);
-//     B = _gammaCorrect(B);
-
-//     return CRGB((int)(R * 255)), (int)(G * 255)), (int)(B * 255));
-// }
-
-// // L darkness: black 0-100 white
-// // C intensity: ?
-// // H hue: 0-360
-// CRGB LCHtoRGB(double L, double C, double H) {
-//   LabColor LAB = _LCHtoLab(L, C, H);
-//   XYZColor xyz = _LabToXYZ(LAB);
-//   return _XYZtoRGB(xyz);
-// }
+// L darkness: black 0-100 white
+// C intensity: ?
+// H hue: 0-360
+CRGB LCHtoRGB(double L, double C, double H) {
+  double l, a, b;
+  double X, Y, Z;
+  _LCHtoLab(L, C, H, &l, &a, &b);
+  _LabToXYZ(l, a, b, &X, &Y, &Z);
+  return _XYZtoRGB(X, Y, Z);
+}
