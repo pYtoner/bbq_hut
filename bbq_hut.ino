@@ -32,13 +32,11 @@ void setup(void) {
   FastLED.addLeds<WS2812B, 6, GRB>(leds, NUM_LEDS);
   setAllBlack();
   delay(20);
-  Serial.begin(9600);
 }
 
 void loop(void) {
   // Check for keypress
   if (!digitalRead(BUTTON_PIN)) {
-    Serial.println("PRESS");
     delay(100);
 
     // wait for it to turn off
@@ -56,7 +54,7 @@ void loop(void) {
       setAllBlack();
       break;
     case 1:
-      messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255));
+      messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255)); // TODO: not working
       break;
     case 2:
       messageSenderHSV(hueChangeIndexed, 5, MIDDLE, CHSV(0, 0, 0));
@@ -89,7 +87,8 @@ CHSV hueLerp(CHSV oldColor, int changeIdx) {
 }
 
 CHSV hueChangeIndexed(CHSV oldColor, int changeIdx) {
-  int hue = changeIdx * 20;
+  int speed = 20;
+  int hue = changeIdx * speed;
   hue %= 255;
 
   return CHSV(hue, 255, 255);
