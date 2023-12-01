@@ -30,20 +30,21 @@ void setup() {
 }
 
 void loop() {
-  setTapestry(0, CRGB(0, 0, 255));
-  delay(50);
-  setTapestry(1, CRGB(0, 0, 255));
-  delay(50);
-  setTapestry(2, CRGB(0, 0, 255));
-  delay(50);
-  setTapestry(3, CRGB(0, 0, 255));
-  delay(50);
-  setTapestry(4, CRGB(0, 0, 255));
-  delay(50);
-  setTapestry(5, CRGB(0, 0, 255));
-  delay(50);
+  // CRGB color = CRGB(255, 255, 255);
+  // setTapestry(0, color);
+  // delay(50);
+  // setTapestry(1, color);
+  // delay(50);
+  // setTapestry(2, color);
+  // delay(50);
+  // setTapestry(3, color);
+  // delay(50);
+  // setTapestry(4, color);
+  // delay(50);
+  // setTapestry(5, color);
+  // delay(50);
 
-  // rainbowPattern(MIDDLE);
+  rainbowPattern(MIDDLE);
 
   // messageSenderHSV(hueChange, 5, MIDDLE);
   // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
@@ -58,7 +59,7 @@ void rainbowPattern(IndexingType indexing) {
   CHSV colors[N_MESSAGES];
 
   for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    colors[i] = CHSV(240, 255, 127);
+    colors[i] = CHSV(100, 255, 255);
   }
 
   while (true) {
@@ -71,13 +72,14 @@ void rainbowPattern(IndexingType indexing) {
     int hue = newColor.hue;
     hue += 20;
     hue %= 255;
+    newColor.hue = hue;
 
     colors[0] = newColor;
 
     for (int i = 0; i <= N_MESSAGES - 1; i++) {
       for (int t = 0; t <= 6 - 1; t++) {
-        leds[index(t, i, MIDDLE), indexing] = colors[i];
-        leds[index(t, 170-i, MIDDLE), indexing] = colors[i];
+        leds[index(t, i, MIDDLE)] = colors[i];
+        leds[index(t, 170-i, MIDDLE)] = colors[i];
       }
     }
     FastLED.show();
@@ -268,21 +270,6 @@ int index(int tapestryIdx, int idx, IndexingType indexing) {
   }
 }
 
-// struct SensorData {
-//   int temperature;
-//   float humidity;
-//   long readingTime;
-// };
-
-// // Function that returns a SensorData struct
-// SensorData getSensorData() {
-//   SensorData data;
-//   data.temperature = 25; // Example: Replace with real sensor reading
-//   data.humidity = 50.5;  // Example: Replace with real sensor reading
-//   data.readingTime = 10;
-//   return data;
-// }
-
 // //////////////////
 // /// LCH TO RGB ///
 // //////////////////
@@ -292,7 +279,7 @@ int index(int tapestryIdx, int idx, IndexingType indexing) {
 //     double b;
 // };
 
-// LabColor* _LCHtoLab(double L, double C, double H) {
+// LabColor _LCHtoLab(double L, double C, double H) {
 //   LabColor result;
 //   result.L = L;
 //   result.a = cos(H * M_PI / 180.0) * C;
