@@ -47,8 +47,8 @@ void loop() {
   // rainbowPattern(MIDDLE);
 
   // messageSenderHSV(hueChange, 5, MIDDLE);
-  messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
-  // messageSenderHSV(hueLerp, 5, MIDDLE);
+  // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
+  messageSenderHSV(hueLerp, 1, MIDDLE);
 
   // messageSenderRGB(twoColorLerpLCH, 5, MIDDLE);
 }
@@ -88,12 +88,16 @@ void rainbowPattern(IndexingType indexing) {
 }
 
 CHSV hueLerp(CHSV oldColor, int changeIdx) {
-  int fromHue = 100;
-  int toHue = 150;
+  int fromHue = 120;
+  int toHue = 155;
 
-  int speed = 5;
+  int speed = 10;
 
-  int fract = 255 - abs(changeIdx % 511 - 255);
+  int fract = (changeIdx * speed) % 511 - 255;
+  if (fract < 0) {
+    fract *= -1;
+  }
+  // int fract = 255 - abs(changeIdx % 511 - 255);
   int hue = lerp8by8(fromHue, toHue, fract);
 
   return CHSV(hue, 255, 255);
@@ -175,8 +179,12 @@ double lerpDouble(double from, double to, int fract) {
   return from + (( to - from ) * (double)fract) / 256;
 }
 
+typedef CRGB (*FunctionPointerRGB)(CRGB, int);
+
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderRGB(CRGB (*changeFunction)(CRGB, float), int messageDelay, IndexingType indexing) {
+void messageSenderRGB(int (*changeFunctionRGB)(CRGB, int), int messageDelay, IndexingType indexing) {
+  FunctionPointerRGB changeFunction = (FunctionPointerRGB)changeFunctionRGB;
+
   #define N_MESSAGES 85
 
   CRGB colors[N_MESSAGES];
