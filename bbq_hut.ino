@@ -1,6 +1,7 @@
 
 #include <FastLED.h>
 
+#define BUTTON_PIN 2
 #define LED_PIN 6
 #define NUM_LEDS 1007 + 1 // actual number + 1 -> extra is used for out of bounds indexed setting
 #define MAX_BRIGHTNESS 255
@@ -23,19 +24,53 @@ int nLeds[6] = {
   168,
 };
 
-void setup() {
+int modeIdx = 0;
+int nModes = 5;
+
+void setup(void) {
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   FastLED.addLeds<WS2812B, 6, GRB>(leds, NUM_LEDS);
   setAllBlack();
   delay(20);
+  Serial.begin(9600);
 }
 
-void loop() {
-  // messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255));
-  // messageSenderHSV(hueChangeIndexed, 5, MIDDLE, CHSV(0, 0, 0));
-  // messageSenderHSV(hueLerp, 1, MIDDLE, CHSV(0, 0, 0));
+void loop(void) {
+  // Check for keypress
+  if (!digitalRead(BUTTON_PIN)) {
+    Serial.println("PRESS");
+    delay(100);
 
-  // messageSenderRGB(twoColorLerpLCH, 1, MIDDLE, CRGB(0, 0, 0));
-  messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE, CRGB(0, 0, 0));
+    // wait for it to turn off
+    while (!digitalRead(BUTTON_PIN)) {
+      // spin loop
+      delay(1);
+    }
+
+    modeIdx += 1;
+    modeIdx %= nModes;
+  }
+
+  switch (modeIdx) {
+    case 0:
+      setAllBlack();
+      break;
+    case 1:
+      messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255));
+      break;
+    case 2:
+      messageSenderHSV(hueChangeIndexed, 5, MIDDLE, CHSV(0, 0, 0));
+      break;
+    case 3:
+      messageSenderHSV(hueLerp, 1, MIDDLE, CHSV(0, 0, 0));
+      break;
+    case 4:
+      messageSenderRGB(twoColorLerpLCH, 1, MIDDLE, CRGB(0, 0, 0));
+      break; 
+    case 5:
+      messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE, CRGB(0, 0, 0));
+      break;
+  }
 }
 
 CHSV hueLerp(CHSV oldColor, int changeIdx) {
@@ -89,6 +124,10 @@ void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, Ind
 
   int changeIdx = 0;
   while (true) {
+    if (isTryingToSwitchMode()) {
+      break;
+    }
+
     for (int i = N_MESSAGES; i > 0; i--) {
       colors[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
     }
@@ -165,6 +204,10 @@ void messageSenderRGB(int (*changeFunctionRGB)(CRGB, int), int messageDelay, Ind
 
   int changeIdx = 0;
   while (true) {
+    if (isTryingToSwitchMode()) {
+      break;
+    }
+
     for (int i = N_MESSAGES; i > 0; i--) {
       colors[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
     }
@@ -250,6 +293,10 @@ int index(int tapestryIdx, int idx, IndexingType indexing) {
     default:
       return padding + idx; // same as normal indexing
   }
+}
+
+bool isTryingToSwitchMode() {
+  return !digitalRead(BUTTON_PIN);
 }
 
 //////////////////
