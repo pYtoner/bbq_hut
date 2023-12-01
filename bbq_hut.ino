@@ -30,62 +30,12 @@ void setup() {
 }
 
 void loop() {
-  // CRGB color = CRGB(255, 255, 255);
-  // setTapestry(0, color);
-  // delay(50);
-  // setTapestry(1, color);
-  // delay(50);
-  // setTapestry(2, color);
-  // delay(50);
-  // setTapestry(3, color);
-  // delay(50);
-  // setTapestry(4, color);
-  // delay(50);
-  // setTapestry(5, color);
-  // delay(50);
-
-  // rainbowPattern(MIDDLE);
-
   // messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255));
   // messageSenderHSV(hueChangeIndexed, 5, MIDDLE, CHSV(0, 0, 0));
   // messageSenderHSV(hueLerp, 1, MIDDLE, CHSV(0, 0, 0));
 
   // messageSenderRGB(twoColorLerpLCH, 1, MIDDLE, CRGB(0, 0, 0));
   messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE, CRGB(0, 0, 0));
-}
-
-void rainbowPattern(IndexingType indexing) {
-  #define N_MESSAGES 85
-
-  CHSV colors[N_MESSAGES];
-
-  for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    colors[i] = CHSV(100, 255, 255);
-  }
-
-  while (true) {
-    for (int i = N_MESSAGES; i > 0; i--) {
-      colors[i] = colors[(i + N_MESSAGES - 1) % N_MESSAGES];
-    }
-
-    // change color
-    CHSV newColor = colors[1];
-    int hue = newColor.hue;
-    hue += 20;
-    hue %= 255;
-    newColor.hue = hue;
-
-    colors[0] = newColor;
-
-    for (int i = 0; i <= N_MESSAGES - 1; i++) {
-      for (int t = 0; t <= 6 - 1; t++) {
-        leds[index(t, i, MIDDLE)] = colors[i];
-        leds[index(t, 170-i, MIDDLE)] = colors[i];
-      }
-    }
-    FastLED.show();
-    delay(40);
-  }
 }
 
 CHSV hueLerp(CHSV oldColor, int changeIdx) {
