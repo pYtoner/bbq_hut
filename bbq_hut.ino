@@ -27,7 +27,6 @@ void setup() {
   FastLED.addLeds<WS2812B, 6, GRB>(leds, NUM_LEDS);
   setAllBlack();
   delay(20);
-  Serial.begin(9600);
 }
 
 void loop() {
@@ -47,12 +46,12 @@ void loop() {
 
   // rainbowPattern(MIDDLE);
 
-  // messageSenderHSV(hueChange, 5, MIDDLE);
-  // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
-  // messageSenderHSV(hueLerp, 1, MIDDLE);
+  // messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255));
+  // messageSenderHSV(hueChangeIndexed, 5, MIDDLE, CHSV(0, 0, 0));
+  // messageSenderHSV(hueLerp, 1, MIDDLE, CHSV(0, 0, 0));
 
-  messageSenderRGB(twoColorLerpLCH, 1, MIDDLE);
-  // messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE);
+  // messageSenderRGB(twoColorLerpLCH, 1, MIDDLE, CRGB(0, 0, 0));
+  messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE, CRGB(0, 0, 0));
 }
 
 void rainbowPattern(IndexingType indexing) {
@@ -125,7 +124,9 @@ CHSV hueChange(CHSV oldColor, int changeIdx) {
 typedef CHSV (*FunctionPointerHSV)(CHSV, int);
 
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, IndexingType indexing) {
+void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, IndexingType indexing, CHSV startColor) {
+  // https://www.selecolor.com/en/hsv-color-picker/
+  // but it goes to 255 in CHSV for S and V
   FunctionPointerHSV changeFunction = (FunctionPointerHSV)changeFunctionHSV;
 
   #define N_MESSAGES 85
@@ -133,7 +134,7 @@ void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, Ind
   CHSV colors[N_MESSAGES];
 
   for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    colors[i] = CHSV(100, 255, 255);
+    colors[i] = startColor;
   }
 
   int changeIdx = 0;
@@ -201,7 +202,7 @@ double lerpDouble(double from, double to, int fract) {
 typedef CRGB (*FunctionPointerRGB)(CRGB, int);
 
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderRGB(int (*changeFunctionRGB)(CRGB, int), int messageDelay, IndexingType indexing) {
+void messageSenderRGB(int (*changeFunctionRGB)(CRGB, int), int messageDelay, IndexingType indexing, CRGB startColor) {
   FunctionPointerRGB changeFunction = (FunctionPointerRGB)changeFunctionRGB;
 
   #define N_MESSAGES 85
@@ -209,7 +210,7 @@ void messageSenderRGB(int (*changeFunctionRGB)(CRGB, int), int messageDelay, Ind
   CRGB colors[N_MESSAGES];
 
   for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    colors[i] = CRGB::Blue;
+    colors[i] = startColor;
   }
 
   int changeIdx = 0;
