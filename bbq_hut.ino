@@ -44,10 +44,10 @@ void loop() {
   // setTapestry(5, color);
   // delay(50);
 
-  rainbowPattern(MIDDLE);
+  // rainbowPattern(MIDDLE);
 
   // messageSenderHSV(hueChange, 5, MIDDLE);
-  // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
+  messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
   // messageSenderHSV(hueLerp, 5, MIDDLE);
 
   // messageSenderRGB(twoColorLerpLCH, 5, MIDDLE);
@@ -117,14 +117,18 @@ CHSV hueChange(CHSV oldColor, int changeIdx) {
   return newColor;
 }
 
+typedef CHSV (*FunctionPointerHSV)(CHSV, int);
+
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderHSV(CHSV (*changeFunction)(CHSV, float), int messageDelay, IndexingType indexing) {
+void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, IndexingType indexing) {
+  FunctionPointerHSV changeFunction = (FunctionPointerHSV)changeFunctionHSV;
+
   #define N_MESSAGES 85
 
   CHSV colors[N_MESSAGES];
 
   for (int i = 0; i <= N_MESSAGES - 1; i++) {
-    colors[i] = CHSV(200, 255, 127);
+    colors[i] = CHSV(100, 255, 255);
   }
 
   int changeIdx = 0;
