@@ -2,7 +2,7 @@
 #include <FastLED.h>
 
 #define LED_PIN 6
-#define NUM_LEDS 170 * 6 + 1// actual number + 1 -> extra is used for out of bounds indexed setting
+#define NUM_LEDS 1007 + 1 // actual number + 1 -> extra is used for out of bounds indexed setting
 #define MAX_BRIGHTNESS 255
 
 enum IndexingType {
