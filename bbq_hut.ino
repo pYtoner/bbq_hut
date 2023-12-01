@@ -27,6 +27,7 @@ void setup() {
   FastLED.addLeds<WS2812B, 6, GRB>(leds, NUM_LEDS);
   setAllBlack();
   delay(20);
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -50,8 +51,8 @@ void loop() {
   // messageSenderHSV(hueChangeIndexed, 5, MIDDLE);
   // messageSenderHSV(hueLerp, 1, MIDDLE);
 
-  // messageSenderRGB(twoColorLerpLCH, 1, MIDDLE);
-  messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE);
+  messageSenderRGB(twoColorLerpLCH, 1, MIDDLE);
+  // messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE);
 }
 
 void rainbowPattern(IndexingType indexing) {
@@ -157,27 +158,26 @@ void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, Ind
 }
 
 CRGB twoColorLerpLCH(CRGB oldColor, int changeIdx) {
-  double f_l = 90;
-  double f_c = 42.0;
-  double f_h = 153.0;
+  // http://colormine.org/convert/rgb-to-lch
+  double f_l = 53.62576010848221;
+  double f_c = 58.118145058923176;
+  double f_h = 51.33352103353704;
 
-  double t_l = 90;
-  double t_c = 71.0;
-  double t_h = 110.0;
+  double t_l = 43.18878705912335;
+  double t_c = 60.471578319098455;
+  double t_h = 284.33499171833785;
 
-  int speed = 5;
+  int speed = 10;
 
   int fract = (changeIdx * speed) % 511 - 255;
   if (fract < 0) {
     fract *= -1;
   }
-  // double l = lerpDouble(f_l, t_l, fract);
+  double l = lerpDouble(f_l, t_l, fract);
   double c = lerpDouble(f_c, t_c, fract);
-  // double h = lerpDouble(f_h, t_h, fract);
+  double h = lerpDouble(f_h, t_h, fract);
 
-  // return LCHtoRGB(90, c, 120);
-  return LCHtoRGB(90, f_c, 120);
-  // return LCHtoRGB(90, t_c, 120);
+  return LCHtoRGB(l, c, h);
 }
 
 CRGB hueChangeIndexedRGB(CRGB oldColor, int changeIdx) {
