@@ -2,7 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def draw_tapestries(colors):
+def draw_tapestries(colors, fig, ax):
+    ax.clear()
+
     def draw_trapezoid(ax, base1, base2, height, offset, colors, n_points=160):
         """
         Draw a trapezoid with a specified number of points on its edges.
@@ -42,8 +44,6 @@ def draw_tapestries(colors):
         # Mark the interpolated points
         ax.scatter(x_points, y_points, s=10, c=colors)
 
-    # Create a figure and axis
-    fig, ax = plt.subplots()
 
     # Set limits and labels
     ax.set_xlim(0, 40)

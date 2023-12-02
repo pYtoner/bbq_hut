@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 from draw_tapestries import draw_tapestries
 
 n_leds = [
@@ -43,10 +44,16 @@ def side_index(tapestry_idx, idx, side, direction):
 
 colors = [(0, 0, 0) for _ in range(160 * 6 + 1)]
 
-for tapestry_idx in range(6):
-    for side in range(4):
-        for idx in range(side_lengths[side]):
-            i = side_index(tapestry_idx, idx, side, 0)
-            colors[i] = (side * 255 / 4, 0, 0)
+while True:
+    for pattern_idx in range(3):
+        for tapestry_idx in range(6):
+            for side in range(4):
+                for idx in range(side_lengths[side]):
+                    i = side_index(tapestry_idx, idx, side, 0)
+                    color = [0, 0, 0]
+                    color[(tapestry_idx + pattern_idx) % 3] = side * 255 / 4
+                    colors[i] = color
 
-draw_tapestries(colors)
+
+        fig, ax = plt.subplots()
+        draw_tapestries(colors, fig, ax)
