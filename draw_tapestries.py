@@ -19,15 +19,19 @@ def draw_tapestries(colors):
         x3, y3 = x1 + (base2 - base1) / 2, height
         x4, y4 = x2 - (base2 - base1) / 2, height
 
+        side_lengths = [
+            40, 20, 40, 60,
+        ]
+
         # Interpolate points along the edges
-        left_side_x = np.linspace(x1, x3, n_points // 4)
-        left_side_y = np.linspace(y1, y3, n_points // 4)
-        right_side_x = np.linspace(x2, x4, n_points // 4)
-        right_side_y = np.linspace(y2, y4, n_points // 4)
-        top_side_x = np.linspace(x3, x4, n_points // 4)
-        top_side_y = np.linspace(y3, y4, n_points // 4)
-        bottom_side_x = np.linspace(x1, x2, n_points // 4)
-        bottom_side_y = np.linspace(y1, y2, n_points // 4)
+        left_side_x = np.linspace(x1, x3, side_lengths[0])
+        left_side_y = np.linspace(y1, y3, side_lengths[0])
+        top_side_x = np.linspace(x3, x4, side_lengths[1])
+        top_side_y = np.linspace(y3, y4, side_lengths[1])
+        right_side_x = np.linspace(x2, x4, side_lengths[2])
+        right_side_y = np.linspace(y2, y4, side_lengths[2])
+        bottom_side_x = np.linspace(x1, x2, side_lengths[3])
+        bottom_side_y = np.linspace(y1, y2, side_lengths[3])
 
         # Combine points
         x_points = np.concatenate(
