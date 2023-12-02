@@ -1,3 +1,5 @@
+// https://www.selecolor.com/en/hsv-color-picker/
+// but it goes to 255 in CHSV for S and V
 
 #include <FastLED.h>
 
@@ -5,6 +7,9 @@
 #define LED_PIN 6
 #define NUM_LEDS 1007 + 1 // actual number + 1 -> extra is used for out of bounds indexed setting
 #define MAX_BRIGHTNESS 255
+
+typedef CHSV (*FunctionPointerHSV)(CHSV, int);
+typedef CRGB (*FunctionPointerRGB)(CRGB, int);
 
 enum IndexingType {
   NORMAL,
@@ -24,7 +29,7 @@ int nLeds[6] = {
   168,
 };
 
-int modeIdx = 0;
+int modeIdx = 5;
 int nModes = 5;
 
 void setup(void) {
@@ -54,7 +59,7 @@ void loop(void) {
       setAllBlack();
       break;
     case 1:
-      messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255)); // TODO: not working
+      messageSenderHSV(hueChange, 1, MIDDLE, CHSV(235, 255, 255));
       break;
     case 2:
       messageSenderHSV(hueChangeIndexed, 5, MIDDLE, CHSV(0, 0, 0));
@@ -105,14 +110,8 @@ CHSV hueChange(CHSV oldColor, int changeIdx) {
   return newColor;
 }
 
-typedef CHSV (*FunctionPointerHSV)(CHSV, int);
-
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, IndexingType indexing, CHSV startColor) {
-  // https://www.selecolor.com/en/hsv-color-picker/
-  // but it goes to 255 in CHSV for S and V
-  FunctionPointerHSV changeFunction = (FunctionPointerHSV)changeFunctionHSV;
-
+void messageSenderHSV(FunctionPointerHSV changeFunction, int messageDelay, IndexingType indexing, CHSV startColor) {
   #define N_MESSAGES 85
 
   CHSV colors[N_MESSAGES];
@@ -147,7 +146,6 @@ void messageSenderHSV(int (*changeFunctionHSV)(CHSV, int), int messageDelay, Ind
 }
 
 CRGB twoColorLerpLCH(CRGB oldColor, int changeIdx) {
-  // http://colormine.org/convert/rgb-to-lch
   double f_l = 53.62576010848221;
   double f_c = 58.118145058923176;
   double f_h = 51.33352103353704;
@@ -187,12 +185,8 @@ double lerpDouble(double from, double to, int fract) {
   return from + (( to - from ) * (double)fract) / 256;
 }
 
-typedef CRGB (*FunctionPointerRGB)(CRGB, int);
-
 // message delay should be 1 or more. 1 means message is sent every step
-void messageSenderRGB(int (*changeFunctionRGB)(CRGB, int), int messageDelay, IndexingType indexing, CRGB startColor) {
-  FunctionPointerRGB changeFunction = (FunctionPointerRGB)changeFunctionRGB;
-
+void messageSenderRGB(FunctionPointerRGB changeFunction, int messageDelay, IndexingType indexing, CRGB startColor) {
   #define N_MESSAGES 85
 
   CRGB colors[N_MESSAGES];
