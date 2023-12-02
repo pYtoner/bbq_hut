@@ -18,6 +18,18 @@ enum IndexingType {
   MIDDLE_TOP,
 };
 
+enum Side {
+  LEFT,
+  TOP,
+  RIGHT,
+  BOTTOM,
+};
+
+enum Direction {
+  NORMAL,
+  REVERSE,
+};
+
 CRGB leds[NUM_LEDS];
 
 int nLeds[6] = {
@@ -276,15 +288,42 @@ int index(int tapestryIdx, int idx, IndexingType indexing) {
 
   switch (indexing) {
     case NORMAL:
-      return padding + (nLeds[tapestryIdx] - idx);
-    case REVERSE:
       return padding + idx;
+    case REVERSE:
+      return padding + (nLeds[tapestryIdx] - idx);
     case MIDDLE:
       return padding + (idx + offsetForBottomMiddle[tapestryIdx]) % nLeds[tapestryIdx];
     case MIDDLE_TOP:
       return padding + (idx + offsetForTopMiddle[tapestryIdx]) % nLeds[tapestryIdx];
     default:
       return padding + idx; // same as normal indexing
+  }
+}
+
+int sideIndex(int tapestryIdx, int idx, Side side, Direction direction) {
+  int tapestryPadding = 0;
+  for (int i = 0; i <= tapestryIdx - 1; i++) {
+    tapestryPadding += nLeds[i];
+  }
+
+  int[4] sideLengths = {
+    60, 20, 60, 100,
+  };
+
+  int sidePadding = 0;
+  for (int i = 0; i <= (int)side - 1; i++) {
+    sidePadding += sideLengths[i];
+  }
+
+  // return dummy led if out of bounds
+  if (idx >= sideLengths[(int)side]) {
+    return NUM_LEDS;
+  }
+
+  if (direction == NORMAL) {
+    return tapestryPadding + sidePadding + idx
+  } else {
+    return tapestryPadding + sidePadding + (sideLengths[(int)side] - idx)
   }
 }
 
