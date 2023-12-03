@@ -46,7 +46,7 @@ int sideLengths[4] = {
 };
 
 int modeIdx = 0;
-int nModes = 6;
+int nModes = 8;
 
 void setup(void) {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -91,6 +91,9 @@ void loop(void) {
       break;
     case 6:
       circlingDot();
+      break;
+    case 7:
+      circlingPulse();
       break;
   }
 }
@@ -330,6 +333,26 @@ int sideIndex(int tapestryIdx, int idx, Side side, Direction direction) {
   }
 }
 
+int circularIndex(int idx, Side side) {
+  int tapestry_idx = idx / sideLengths[(int)side];
+
+  int side_idx = idx % sideLengths[(int)side];
+
+  int transformed_idx = sideIndex(tapestry_idx, side_idx, side, FORWARDS);
+  return transformed_idx;
+}
+
+// pulse(i % 10, 5)
+// min value will be 0 max will be 5
+int pulse(int n, int max_val) {
+  if (n > max_val) {
+    n -= max_val * 2;
+    n *= -1;
+  }
+
+  return n;
+}
+
 void circlingDot() {
   int changeIdx = 0;
   while (true) {
@@ -359,6 +382,31 @@ void circlingDot() {
       leds[transformed_idx] = CRGB(255, 0, 0);
     }
 
+    changeIdx += 1;
+  }
+}
+
+void circlingPulse() {
+  int changeIdx = 0;
+  while (true) {
+    if (isTryingToSwitchMode()) {
+      break;
+    }
+
+    setAllBlack();
+
+    int side = LEFT;
+    int maximum = sideLengths[(int)side] * 6;
+
+    int n_dots = 20;
+    for (int t = 0; t <= n_dots - 1; t++) {
+      int i = (changeIdx + t) % maximum;
+      int transformed_idx = circularIndex(i, side);
+
+      double intensity = (double)pulse(t, n_dots / 2) / ((double)n_dots / 2.0);
+      int color = (int)(255.0 * powf(intensity, 1.3));
+      leds[transformed_idx] = CRGB(color, 0, 0);
+    }
     changeIdx += 1;
   }
 }
