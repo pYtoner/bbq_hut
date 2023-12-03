@@ -26,8 +26,8 @@ enum Side {
 };
 
 enum Direction {
-  NORMAL,
-  REVERSE,
+  FORWARDS,
+  BACKWARDS,
 };
 
 CRGB leds[NUM_LEDS];
@@ -41,8 +41,12 @@ int nLeds[6] = {
   168,
 };
 
-int modeIdx = 5;
-int nModes = 5;
+int sideLengths[4] = {
+    40, 20, 40, 68,
+};
+
+int modeIdx = 0;
+int nModes = 6;
 
 void setup(void) {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -84,6 +88,9 @@ void loop(void) {
       break; 
     case 5:
       messageSenderRGB(hueChangeIndexedRGB, 1, MIDDLE, CRGB(0, 0, 0));
+      break;
+    case 6:
+      circlingDot();
       break;
   }
 }
@@ -306,10 +313,6 @@ int sideIndex(int tapestryIdx, int idx, Side side, Direction direction) {
     tapestryPadding += nLeds[i];
   }
 
-  int[4] sideLengths = {
-    60, 20, 60, 100,
-  };
-
   int sidePadding = 0;
   for (int i = 0; i <= (int)side - 1; i++) {
     sidePadding += sideLengths[i];
@@ -320,10 +323,43 @@ int sideIndex(int tapestryIdx, int idx, Side side, Direction direction) {
     return NUM_LEDS;
   }
 
-  if (direction == NORMAL) {
-    return tapestryPadding + sidePadding + idx
+  if (direction == FORWARDS) {
+    return tapestryPadding + sidePadding + idx;
   } else {
-    return tapestryPadding + sidePadding + (sideLengths[(int)side] - idx)
+    return tapestryPadding + sidePadding + (sideLengths[(int)side] - idx);
+  }
+}
+
+void circlingDot() {
+  int changeIdx = 0;
+  while (true) {
+    if (isTryingToSwitchMode()) {
+      break;
+    }
+
+    setAllBlack();
+
+    // 0 to 1
+    double pattern_progress = (double)(changeIdx % 100) / 100.0;
+
+    double tapestry_progress = fmod(pattern_progress * 6.0, 1.0);
+    int tapestry_idx = (int)(pattern_progress * 6);
+
+    {
+      int side = 1;
+      int side_idx = (int)(tapestry_progress * sideLengths[side]);
+      int transformed_idx = sideIndex(tapestry_idx, side_idx, side, 0);
+      leds[transformed_idx] = CRGB(255, 0, 0);
+    }
+
+    {
+      int side = 3;
+      int side_idx = (int)(tapestry_progress * sideLengths[side]);
+      int transformed_idx = sideIndex(tapestry_idx, side_idx, side, 0);
+      leds[transformed_idx] = CRGB(255, 0, 0);
+    }
+
+    changeIdx += 1;
   }
 }
 
