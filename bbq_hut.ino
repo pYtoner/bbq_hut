@@ -42,7 +42,7 @@ int nLeds[6] = {
 };
 
 int sideLengths[4] = {
-    40, 20, 40, 68,
+    54, 10, 54, 50,
 };
 
 int modeIdx = 0;
